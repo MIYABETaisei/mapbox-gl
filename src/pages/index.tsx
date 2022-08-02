@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import mapboxgl from "mapbox-gl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Marker = {
   name: string;
@@ -24,6 +24,15 @@ export const markers: Marker[] = [
 const Home: NextPage = () => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapboxgl.Map | any>(null);
+  const [userlat, setUserlat] = useState(33.5902);
+  const [userlong, setUserlong] = useState(130.4017);
+  const successCallback = (position: any) => {
+    setUserlat(position.coords.latitude);
+    setUserlong(position.coords.longitude);
+  };
+  const errorCallback = (error: any) => {
+    alert(error);
+  };
   const geojson = {
     type: "Feature",
     features: markers.map((marker) => ({
@@ -42,9 +51,11 @@ const Home: NextPage = () => {
   useEffect(() => {
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_GL_ACCESS_TOKEN ?? "";
     map.current = new mapboxgl.Map({
+      logoPosition: "top-left",
+      attributionControl: false,
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [130.4017, 33.5902], // center map on Chad
+      center: [userlong, userlat], // center map on Chad
       zoom: 15,
     });
     map.current.on("load", () => {
@@ -67,11 +78,22 @@ const Home: NextPage = () => {
           .addTo(map.current);
       });
     });
-  }, []);
+  }, [userlat, userlong]);
 
   return (
     <main>
       <div className="w-screen h-screen" ref={mapContainer} />
+      <button
+        className="absolute top-2 right-2 p-3 text-lg bg-black text-white"
+        onClick={() =>
+          navigator.geolocation.getCurrentPosition(
+            successCallback,
+            errorCallback
+          )
+        }
+      >
+        Get Geolocation
+      </button>
     </main>
   );
 };
