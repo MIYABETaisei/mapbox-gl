@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 import mapboxgl from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
+import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
+import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
 type Marker = {
   name: string;
@@ -48,6 +50,13 @@ const Home: NextPage = () => {
       },
     })),
   };
+  // const geocoder = new MapboxGeocoder({
+  //   accessToken: process.env.NEXT_PUBLIC_MAPBOX_GL_ACCESS_TOKEN ?? "",
+  //   mapboxgl: mapboxgl,
+  //   language: "ja",
+  //   types: "poi",
+  // });
+  // map.addControl(geocoder);
   useEffect(() => {
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_GL_ACCESS_TOKEN ?? "";
     map.current = new mapboxgl.Map({
