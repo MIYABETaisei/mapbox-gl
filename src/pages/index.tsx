@@ -26,15 +26,6 @@ export const markers: Marker[] = [
 const Home: NextPage = () => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapboxgl.Map | any>(null);
-  const [userlat, setUserlat] = useState(33.5902);
-  const [userlong, setUserlong] = useState(130.4017);
-  const successCallback = (position: any) => {
-    setUserlat(position.coords.latitude);
-    setUserlong(position.coords.longitude);
-  };
-  const errorCallback = (error: any) => {
-    alert(error);
-  };
   const geojson = {
     type: "Feature",
     features: markers.map((marker) => ({
@@ -60,21 +51,24 @@ const Home: NextPage = () => {
   useEffect(() => {
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_GL_ACCESS_TOKEN ?? "";
     map.current = new mapboxgl.Map({
-      logoPosition: "top-left",
+      logoPosition: "bottom-left",
       attributionControl: false,
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: [userlong, userlat], // center map on Chad
-      zoom: 15,
+      style: "mapbox://styles/taisei-m/cl6lh9446000h14pebx8w9o75",
+      center: [139.6503, 35.6762], // center map on Chad
+      zoom: 10,
     });
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl as any,
+      types: "poi",
+    });
+    map.current.addControl(geocoder, "top-left");
     map.current.on("load", () => {
       geojson.features.forEach((marker) => {
-        // create a DOM element for the marker
-        const markerIcon = document.createElement("div");
-        markerIcon.className =
-          "w-[30px] h-[30px] rounded-full bg-pink-500 border-2 border-white";
-
-        new mapboxgl.Marker(markerIcon)
+        new mapboxgl.Marker({
+          color: "#FF3333",
+        })
           .setLngLat(marker.geometry.coordinates)
           .setPopup(
             // add pop out to map
@@ -87,26 +81,14 @@ const Home: NextPage = () => {
           .addTo(map.current);
       });
     });
-    new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      mapboxgl: mapboxgl,
-    }).addTo(map.current);
-  }, [userlat, userlong]);
+    geocoder.on("result", function (e) {
+      console.log(e);
+    });
+  }, []);
 
   return (
     <main>
       <div className="w-screen h-screen" ref={mapContainer} />
-      <button
-        className="absolute top-2 right-2 p-3 text-lg bg-black text-white"
-        onClick={() =>
-          navigator.geolocation.getCurrentPosition(
-            successCallback,
-            errorCallback
-          )
-        }
-      >
-        Get Geolocation
-      </button>
     </main>
   );
 };
