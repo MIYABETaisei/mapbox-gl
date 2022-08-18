@@ -87,6 +87,10 @@ const Home: NextPage = () => {
           .addTo(map.current);
       });
     });
+    new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+    }).addTo(map.current);
   }, [userlat, userlong]);
 
   return (
