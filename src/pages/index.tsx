@@ -3,6 +3,9 @@ import mapboxgl from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import { FirebaseApp, getApp } from "firebase/app";
+import "../lib/firebase/init";
+import { ShopsList } from "../components/ShopsList";
 
 type Marker = {
   name: string;
@@ -86,9 +89,16 @@ const Home: NextPage = () => {
     });
   }, []);
 
+  const app: FirebaseApp = getApp();
   return (
     <main>
-      <div className="w-screen h-screen" ref={mapContainer} />
+      <ul>
+        <li>name = {app.name}</li>
+        <li>appId = {app.options.appId}</li>
+        <li>apiKey = {app.options.apiKey}</li>
+      </ul>
+      <ShopsList />
+      <div className="w-screen" ref={mapContainer} />
     </main>
   );
 };
