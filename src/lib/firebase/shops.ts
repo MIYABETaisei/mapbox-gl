@@ -8,8 +8,9 @@ import {
 // import '../utils/firebase/init' // Initialize FirebaseApp
 
 export type Shop = {
-  id: string;
+  id: number;
   name: string;
+  category: string;
   postcode: string;
   address: string;
   latitude: number;
@@ -23,7 +24,7 @@ export async function getShops(): Promise<Shop[]> {
 
   shopsSnapshot.forEach((doc) => {
     const shop = doc.data() as Shop;
-    shops.push({ ...shop, id: doc.id });
+    shops.push({ ...shop, id: Number(doc.id) });
   });
 
   return shops;
@@ -31,11 +32,12 @@ export async function getShops(): Promise<Shop[]> {
 
 export async function addShop(shop: Shop): Promise<void> {
   const db = getFirestore();
-  const docRef = doc(db, "Shops", shop.id);
+  const docRef = doc(db, "shops", String(shop.id));
   await setDoc(
     docRef,
     {
       name: shop.name,
+      category: shop.category,
       address: shop.address,
       postcode: shop.postcode,
       latitude: shop.latitude,
