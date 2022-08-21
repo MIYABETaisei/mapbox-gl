@@ -1,11 +1,12 @@
 import type { NextPage } from "next";
 import mapboxgl from "mapbox-gl";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import { FirebaseApp, getApp } from "firebase/app";
 import "../lib/firebase/init";
-import { ShopsList } from "../components/ShopsList";
+import { Button, Dialog } from "@mantine/core";
+import { addShop, Shop } from "../lib/firebase/shops";
 
 type Marker = {
   name: string;
@@ -29,6 +30,8 @@ export const markers: Marker[] = [
 const Home: NextPage = () => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapboxgl.Map | any>(null);
+  const [info, setInfo] = useState<Shop>();
+  const [regist, setRegist] = useState<boolean>(false);
   const geojson = {
     type: "Feature",
     features: markers.map((marker) => ({
@@ -44,6 +47,24 @@ const Home: NextPage = () => {
       },
     })),
   };
+  const handleInfo = useCallback((e: any) => {
+    setInfo((prevstate) => {
+      return {
+        ...prevstate,
+        id: Math.round(Math.random() * 10000000000),
+        name: e.result.text_ja,
+        category: e.result.properties.category,
+        postcode: e.result.context[0].text_ja,
+        address:
+          e.result.context[3].text_ja +
+          e.result.context[2].text_ja +
+          e.result.context[1].text_ja +
+          e.result.properties.address,
+        latitude: e.result.geometry.coordinates[1],
+        longitude: e.result.geometry.coordinates[0],
+      };
+    });
+  }, []);
   // const geocoder = new MapboxGeocoder({
   //   accessToken: process.env.NEXT_PUBLIC_MAPBOX_GL_ACCESS_TOKEN ?? "",
   //   mapboxgl: mapboxgl,
@@ -85,20 +106,48 @@ const Home: NextPage = () => {
       });
     });
     geocoder.on("result", function (e) {
-      console.log(e);
+      setRegist(true);
+      handleInfo(e);
     });
   }, []);
 
   const app: FirebaseApp = getApp();
   return (
     <main>
-      <ul>
-        <li>name = {app.name}</li>
-        <li>appId = {app.options.appId}</li>
-        <li>apiKey = {app.options.apiKey}</li>
-      </ul>
-      <ShopsList />
-      <div className="w-screen" ref={mapContainer} />
+      <div className="w-screen h-screen" ref={mapContainer} />
+      {info !== undefined && regist && (
+        <Dialog
+          opened={regist}
+          withCloseButton
+          onClose={() => setRegist(false)}
+          size="lg"
+          radius={0}
+          position={{ left: "20px", bottom: "20px" }}
+        >
+          <div className="absolute top-0 left-0 -translate-y-full w-full h-[200px] bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+          <h3 className="text-xl font-bold">{info.name}</h3>
+          <p className="text-sm">{info.category}</p>
+          <p className="text-sm">{info.postcode}</p>
+          <p className="text-sm">{info.address}</p>
+          <p className="text-sm">{info.latitude}</p>
+          <p className="text-sm">{info.longitude}</p>
+          <div className="flex justify-around mt-5">
+            <Button
+              className="flex w-[calc(50%-10px)] h-[40px] justify-center items-center text-sm font-bold text-[#333] border border-[#333] hover:bg-inherit"
+              onClick={() => setRegist(false)}
+            >
+              CANCEL
+            </Button>
+            <Button
+              radius={0}
+              onClick={() => addShop(info)}
+              className="flex w-[calc(50%-10px)] h-[40px] justify-center items-center text-sm font-bold bg-[#333] text-white hover:bg-[#333]"
+            >
+              REGISTER
+            </Button>
+          </div>
+        </Dialog>
+      )}
     </main>
   );
 };
