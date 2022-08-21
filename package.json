@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.0",
+    "@emotion/server": "^11.10.0",
+    "@mantine/core": "^5.2.0",
+    "@mantine/hooks": "^5.2.0",
+    "@mantine/next": "^5.2.0",
     "@mapbox/mapbox-gl-geocoder": "^5.0.1",
     "firebase": "^9.9.3",
     "mapbox-gl": "^2.9.2",
